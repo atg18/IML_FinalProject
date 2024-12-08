@@ -1,91 +1,91 @@
-import cv2
+import random
 import os
+import dlib
 import numpy as np
+import sys
+import traceback
+import pickle  # For saving the model
 
-# Path to the face dataset
-dataset_path = r"C:\Users\Vasu\Downloads\Real-time-Attendance-Management-System-using-Deep-Learning-Techniques-main\face_dataset"
-recognizer = cv2.face.LBPHFaceRecognizer_create()
+dataset_path = r'face_dataset'
 
-# List to hold face images and corresponding labels
-faces = []
-labels = []
+class FaceRecognition:
+    def __init__(self, dataset_path):
+        # Initialization code
+        try:
+            if not os.path.exists(dataset_path):
+                raise FileNotFoundError(f"Dataset path does not exist: {dataset_path}")
 
-# List of names (to map the labels back to names)
-names = {}
+            shape_predictor_path = r'data_dlib\shape_predictor_68_face_landmarks.dat'
+            face_rec_model_path = r'data_dlib\dlib_face_recognition_resnet_model_v1.dat'
 
-# Function to load images and labels
-def load_images_and_labels():
-    label = 0
-    for person_name in os.listdir(dataset_path):
-        person_path = os.path.join(dataset_path, person_name)
-        
-        if os.path.isdir(person_path):
-            names[label] = person_name  # Map label to person name
-            
-            for image_name in os.listdir(person_path):
-                if image_name.endswith(".jpg"):
-                    image_path = os.path.join(person_path, image_name)
-                    
-                    # Read image and convert to grayscale
-                    gray_image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
-                    
-                    # Detect faces in the image
-                    face_detector = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
-                    faces_detected = face_detector.detectMultiScale(gray_image, 1.3, 5)
-                    
-                    for (x, y, w, h) in faces_detected:
-                        face = gray_image[y:y + h, x:x + w]
-                        faces.append(face)
-                        labels.append(label)
-            
-            label += 1  # Increment label for next person
+            if not os.path.exists(shape_predictor_path):
+                raise FileNotFoundError(f"Shape predictor file not found: {shape_predictor_path}")
+            if not os.path.exists(face_rec_model_path):
+                raise FileNotFoundError(f"Face recognition model file not found: {face_rec_model_path}")
 
-# Load images and labels
-load_images_and_labels()
+            self.detector = dlib.get_frontal_face_detector()
+            self.shape_predictor = dlib.shape_predictor(shape_predictor_path)
+            self.face_rec_model = dlib.face_recognition_model_v1(face_rec_model_path)
 
-# Train the model using the faces and labels
-recognizer.train(faces, np.array(labels))
-recognizer.save("face_trainer.yml")
-print("[INFO] Model trained and saved as 'face_trainer.yml'.")
+            self.known_face_encodings = []
+            self.known_face_names = []
 
-# Start the webcam for real-time face recognition
-cap = cv2.VideoCapture(0)
-face_detector = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
+            self.load_known_faces(dataset_path)
+            print(f"[SUCCESS] Loaded {len(self.known_face_names)} faces")
 
-while True:
-    ret, frame = cap.read()
-    if not ret:
-        break
-    
-    # Convert the frame to grayscale
-    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    
-    # Detect faces in the frame
-    faces_in_frame = face_detector.detectMultiScale(gray, 1.3, 5)
-    
-    for (x, y, w, h) in faces_in_frame:
-        face = gray[y:y + h, x:x + w]
-        
-        # Predict the label of the face
-        label, confidence = recognizer.predict(face)
-        
-        # Display the name if recognized, otherwise display 'Unknown'
-        if confidence < 100:
-            name = names[label]
-        else:
-            name = "Unknown"
-        
-        # Draw rectangle around face and display the name
-        cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0), 2)
-        cv2.putText(frame, name, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 255, 0), 2)
-    
-    # Show the video feed with face detection and name
-    cv2.imshow("Face Recognition", frame)
-    
-    # Break the loop if 'ESC' key is pressed
-    if cv2.waitKey(1) & 0xFF == 27:
-        break
+            # Save the trained model
+            self.save_model("trained_model.pkl")
 
-# Cleanup
-cap.release()
-cv2.destroyAllWindows()
+        except Exception as e:
+            print(f"[ERROR] Initialization failed: {e}")
+            traceback.print_exc()
+            sys.exit(1)
+
+    def load_known_faces(self, dataset_path, num_jitters=10, num_images=25):
+        # Function to load known faces from dataset
+        try:
+            for person_name in os.listdir(dataset_path):
+                person_path = os.path.join(dataset_path, person_name)
+
+                if os.path.isdir(person_path):
+                    print(f"[LOADING] Processing faces for: {person_name}")
+                    face_count = 0
+                    image_files = [image_name for image_name in os.listdir(person_path) 
+                                   if image_name.lower().endswith(('.png', '.jpg', '.jpeg'))]
+                    selected_images = random.sample(image_files, min(len(image_files), num_images))
+
+                    for image_name in selected_images:
+                        image_path = os.path.join(person_path, image_name)
+
+                        try:
+                            img = dlib.load_rgb_image(image_path)
+                            faces = self.detector(img)
+                            for face in faces:
+                                shape = self.shape_predictor(img, face)
+                                face_encoding = self.face_rec_model.compute_face_descriptor(
+                                    img, shape, num_jitters=num_jitters)
+                                self.known_face_encodings.append(face_encoding)
+                                self.known_face_names.append(person_name)
+                                face_count += 1
+                        except Exception as img_error:
+                            print(f"[WARNING] Error processing {image_path}: {img_error}")
+
+                    print(f"[RESULT] Loaded {face_count} faces for {person_name}")
+        except Exception as e:
+            print(f"[ERROR] Face loading failed: {e}")
+            traceback.print_exc()
+
+    def save_model(self, model_path):
+        # Save the trained model to a file
+        try:
+            with open(model_path, 'wb') as f:
+                pickle.dump((self.known_face_encodings, self.known_face_names), f)
+            print(f"[SUCCESS] Model saved to {model_path}")
+        except Exception as e:
+            print(f"[ERROR] Failed to save model: {e}")
+
+if __name__ == "__main__":
+    dataset_path = r'face_dataset'
+    face_rec = FaceRecognition(dataset_path)
+    print("Done")
+
