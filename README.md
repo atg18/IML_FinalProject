@@ -1,4 +1,4 @@
-**StoringFaceandName.py**
+**1. StoringFaceandName.py**
 Purpose: To capture face images of individual users and augment these images to creat a robust dataset for training the model.
 
 **Input Collection:**
@@ -20,7 +20,7 @@ These augmentations simulate variations in real-world conditions like head tilt,
 • Each augmented image is saved in a folder named after the user within the face dataset directory. The filenames include metadata about the augmentation type.
   Output: A dataset of augmented face images stored for each user, organized by individual directories
 
-**TrainingModel.py**
+**2. TrainingModel.py**
 Purpose: To train a facial recognition model using the augmented face dataset created during the registration stage.
 
 Dataset Loading:
@@ -38,7 +38,7 @@ Storage:
 • These are serialized into a file (trained model.pkl) for use during the recognition phase.
 Output: A serialized model (trained model.pkl) containing facial encodings and associated names.
 
-**RecognisingFaces.py**
+**3. RecognisingFaces.py**
 Purpose: To recognize faces in real-time using the trained model and log attendance based on identified individuals.
 
 Model Loading:
