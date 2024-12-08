@@ -14,11 +14,11 @@ The captured face images undergo various transformations to enhance the dataset:
 • Scaling: Faces are resized by scaling factors (e.g., 0.9x and 1.1x).
 • Flipping: Horizontal flips are applied to reverse the image.
 • Translation: Faces are shifted in small steps along the x and y axes (e.g., ±10 pixels).
-These augmentations simulate variations in real-world conditions like head tilt, movement, and different perspectives.
+These augmentations simulate variations in real-world conditions like head tilt, movement, and different perspectives.
 
 **Storage:**
 • Each augmented image is saved in a folder named after the user within the face dataset directory. The filenames include metadata about the augmentation type.
-  Output: A dataset of augmented face images stored for each user, organized by individual directories
+  Output: A dataset of augmented face images stored for each user, organized by individual directories
 
 **TrainingModel.py**
 Purpose: To train a facial recognition model using the augmented face dataset created during the registration stage.
@@ -36,7 +36,7 @@ key facial landmarks to map the structural features of each face.
 Storage:
 • The computed face encodings and corresponding names are saved in memory.
 • These are serialized into a file (trained model.pkl) for use during the recognition phase.
-Output: A serialized model (trained model.pkl) containing facial encodings and associated names.
+Output: A serialized model (trained model.pkl) containing facial encodings and associated names.
 
 **RecognisingFaces.py**
 Purpose: To recognize faces in real-time using the trained model and log attendance based on identified individuals.
