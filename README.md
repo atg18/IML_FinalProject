@@ -1,3 +1,5 @@
+**ATTENDANCE TRACKING USING FACE RECOGNITION**
+
 **1. StoringFaceandName.py**
 Purpose: To capture face images of individual users and augment these images to creat a robust dataset for training the model.
 
