@@ -33,7 +33,7 @@ Feature Extraction:
 • Face Detection: Dlib’s frontal face detector is used to locate faces in the images.
 • Landmark Detection: Dlib’s shape predictor 68 face landmarks detects 68
 key facial landmarks to map the structural features of each face.
-• Face Encoding: Each face’s unique features are encoded into a 128-dimensional vector using Dlib’s ResNet-based facial recognition model. These encodings represent the biometric signature of the face, which is later used for identification.
+• Face Encoding: Each face’s unique features are encoded into a 128-dimensional vector using Dlib’s ResNet-based facial recognition model. These encodings represent the biometric signature of the face, which is later used for identification.
 
 Storage:
 • The computed face encodings and corresponding names are saved in memory.
