@@ -1,5 +1,7 @@
 **ATTENDANCE TRACKING USING FACE RECOGNITION**
 
+**This system leverages advanced technologies in computer vision and machine learning to automate attendance tracking using facial recognition. By employing tools such as Flask, OpenCV, Dlib, and Haar Cascade Classifiers, the solution ensures efficient face detection, recognition, and logging.**
+
 **1. StoringFaceandName.py**
 Purpose: To capture face images of individual users and augment these images to creat a robust dataset for training the model.
 
